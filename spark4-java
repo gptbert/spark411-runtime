@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+RUNTIME_HOME=/opt/runtime
+GLIBC_HOME=${RUNTIME_HOME}/glibc
+JAVA_HOME=${RUNTIME_HOME}/java
+
+JAVA_BIN="${JAVA_HOME}/bin/java"
+
+find_loader() {
+  local x
+  for x in \
+    "${GLIBC_HOME}/lib/ld-linux-x86-64.so.2" \
+    "${GLIBC_HOME}/lib64/ld-linux-x86-64.so.2"; do
+    if [[ -x "$x" ]]; then
+      echo "$x"
+      return 0
+    fi
+  done
+  return 1
+}
+
+LOADER="$(find_loader || true)"
+if [[ -z "${LOADER}" ]]; then
+  echo "FATAL: glibc loader not found" >&2
+  exit 1
+fi
+
+LIB_PATH="${GLIBC_HOME}/lib:${GLIBC_HOME}/lib64:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server"
+
+exec "${LOADER}" \
+  --library-path "${LIB_PATH}" \
+  "${JAVA_BIN}" "$@"
