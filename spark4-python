@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+RUNTIME_HOME=/opt/runtime
+GLIBC_HOME=${RUNTIME_HOME}/glibc
+CONDA_ENV_HOME=${RUNTIME_HOME}/envs/py312-spark411
+PY_BIN=${CONDA_ENV_HOME}/bin/python3.12
+
+for x in \
+  "${GLIBC_HOME}/lib/ld-linux-x86-64.so.2" \
+  "${GLIBC_HOME}/lib64/ld-linux-x86-64.so.2"; do
+  if [[ -x "$x" ]]; then
+    LOADER="$x"
+    break
+  fi
+done
+
+if [[ -z "${LOADER:-}" ]]; then
+  echo "FATAL: glibc loader not found" >&2
+  exit 1
+fi
+
+exec "${LOADER}" \
+  --library-path "${GLIBC_HOME}/lib:${GLIBC_HOME}/lib64:${CONDA_ENV_HOME}/lib" \
+  "${PY_BIN}" "$@"
