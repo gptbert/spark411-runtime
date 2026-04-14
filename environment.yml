@@ -1,0 +1,16 @@
+name: py312-spark411
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - setuptools
+  - wheel
+  - conda-pack
+  - numpy=1.26.*
+  - pandas=2.2.*
+  - pyarrow=15.*
+  - psutil
+  - cloudpickle
+  - pip:
+      - pyspark==4.1.1
